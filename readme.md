@@ -4,7 +4,8 @@ IssuesMaker est une application de bureau permettant de créer et gérer facilem
 
 ## 📥 Installation
 
-Téléchargez simplement la dernière version de l'exécutable (.exe) depuis la page des [releases](https://github.com/Yota02/IssuesMaker/releases/tag/v1.0.0).
+Téléchargez simplement la dernière version de l'exécutable (.exe) depuis la page des ## 📥 Installation
+[Télécharger IssuesMaker-v1.0.0.exe](https://github.com/Yota02/IssuesMaker/releases/tag/v1.0.0).
 
 ## 🖼️ Captures d'écran
 
