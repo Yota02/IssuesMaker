@@ -49,7 +49,7 @@ class GitHubIssueGenerator:
             "Accept": "application/vnd.github.v3+json",
         }
 
-    def create_issue(self, title, body, labels=None, assignees=None):
+    def create_issue(self, title, body, labels=None, assignees=None, issue_type=None):
         """
         Crée une nouvelle issue sur GitHub.
 
@@ -58,6 +58,7 @@ class GitHubIssueGenerator:
             body (str): Description de l'issue
             labels (list): Liste des labels à appliquer
             assignees (list): Liste des utilisateurs assignés
+            issue_type (str): Type de l'issue (Bug, Feature, Task)
 
         Returns:
             dict: Réponse de l'API GitHub
@@ -77,6 +78,9 @@ class GitHubIssueGenerator:
 
         if assignees:
             data["assignees"] = assignees
+
+        if issue_type:
+            data["type"] = issue_type 
 
         response = requests.post(url, headers=self.get_headers(), json=data)
 
@@ -603,9 +607,9 @@ class GithubIssueGeneratorGUI(QMainWindow):
 
     def load_template(self, template_type):
         templates = {
-            "bug": {
-                "title": "Bug: ",
-                "body": """## Description du bug
+        "bug": {
+            "title": "[Bug] ",
+            "body": """## Description du bug
 Décrivez clairement et précisément le bug rencontré.
 
 ## Étapes pour reproduire
@@ -634,12 +638,13 @@ Collez ici les logs d'erreur si disponibles
 
 ## Informations supplémentaires
 Tout autre contexte utile pour comprendre et résoudre le bug.""",
-                "labels": "bug",
-                "assignees": "",
-            },
-            "feature": {
-                "title": "Fonctionnalité: ",
-                "body": """## User Story
+            "labels": "bug",
+            "type": "Bug",
+            "assignees": "",
+        },
+        "feature": {
+            "title": "[Feature] ",
+            "body": """## User Story
 En tant que [type d'utilisateur]
 Je veux [action/fonctionnalité souhaitée]
 Afin de [bénéfice/objectif]
@@ -649,12 +654,13 @@ Décrivez en détail comment la fonctionnalité devrait être implémentée.
 
 ## Informations supplémentaires
 Tout autre contexte ou capture d'écran utile.""",
-                "labels": "enhancement",
-                "assignees": "",
-            },
-            "documentation": {
-                "title": "Documentation: ",
-                "body": """## Description
+            "labels": "enhancement",
+            "type": "Feature",
+            "assignees": "",
+        },
+        "documentation": {
+            "title": "[Documentation] ",
+            "body": """## Description
 Décrivez ce qui doit être documenté ou les modifications à apporter.
 
 ## Sections concernées
@@ -675,10 +681,11 @@ Détaillez les changements/ajouts à apporter à la documentation.
 
 ## Informations supplémentaires
 Tout autre contexte pertinent.""",
-                "labels": "documentation",
-                "assignees": "",
-            },
-        }
+            "labels": "documentation",
+            "type": "Task",
+            "assignees": "",
+        },
+    }
 
         template = templates.get(template_type)
         if template:
@@ -686,6 +693,7 @@ Tout autre contexte pertinent.""",
             self.body_input.setText(template["body"])
             self.labels_input.setText(template["labels"])
             self.assignees_input.setText(template["assignees"])
+            self.current_issue_type = template["type"]
 
     def create_issue(self):
         # Récupérer les valeurs
@@ -694,29 +702,16 @@ Tout autre contexte pertinent.""",
         labels_text = self.labels_input.text().strip()
         assignees_text = self.assignees_input.text().strip()
 
-        # Vérifier si le titre est rempli
-        if not title:
-            QMessageBox.warning(
-                self, "Erreur", "Veuillez entrer un titre pour l'issue."
-            )
-            return
-
         # Convertir les chaînes en listes
-        labels = (
-            [label.strip() for label in labels_text.split(",")] if labels_text else []
-        )
-        assignees = (
-            [assignee.strip() for assignee in assignees_text.split(",")]
-            if assignees_text
-            else []
-        )
+        labels = [label.strip() for label in labels_text.split(",")] if labels_text else []
+        assignees = [assignee.strip() for assignee in assignees_text.split(",")] if assignees_text else []
 
         # Créer l'issue
         self.statusBar().showMessage("Création de l'issue...")
 
         try:
             result, success = self.issue_generator.create_issue(
-                title, body, labels, assignees
+                title, body, labels, assignees, issue_type=self.current_issue_type
             )
 
             if success:
@@ -725,13 +720,6 @@ Tout autre contexte pertinent.""",
                     "Succès",
                     f"Issue créée avec succès!\nURL: {result['html_url']}",
                 )
-
-                # Réinitialiser les champs
-                self.title_input.clear()
-                self.body_input.clear()
-                self.labels_input.clear()
-                self.assignees_input.clear()
-
                 self.statusBar().showMessage("Issue créée: " + result["html_url"])
             else:
                 QMessageBox.warning(
