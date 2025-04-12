@@ -19,16 +19,12 @@ from PyQt5.QtWidgets import (
     QListWidget,
     QMessageBox,
     QGroupBox,
-    QCheckBox,
     QTableWidget,
     QTableWidgetItem,
     QHeaderView,
 )
 from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtGui import QPalette, QColor, QFontDatabase
-from PyQt5.QtCore import Qt
-
+from PyQt5.QtGui import QIcon
 
 class GitHubIssueGenerator:
     def __init__(self, token=None, owner=None, repo=None):
